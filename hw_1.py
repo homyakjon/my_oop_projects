@@ -29,13 +29,13 @@ class Phone:
 
     def set_number_phone(self, value: str) -> None:
         self.description_number = value
-        print(f'Входящий звонок: {self.description_number}')
+        print(f'Incoming call: {self.description_number}')
 
     def __str__(self) -> str:
         return f'Phone(description_number={self.description_number}, accepted_calls={self.__counter_enter_calls})'
 
     def get_accepted_calls(self) -> int:
-        print(f'Количество принятых звонков: {self.__counter_enter_calls}')
+        print(f'number of calls received: {self.__counter_enter_calls}')
         return self.__counter_enter_calls
 
     def accept_call(self) -> None:
@@ -44,7 +44,7 @@ class Phone:
     def save_numbers(self, the_file: str) -> None:
         with open(the_file, 'a', newline='') as file:
             write_file = csv.writer(file)
-            write_file.writerow(([self.description_number, self.get_accepted_calls()]))
+            write_file.writerow([self.description_number, self.get_accepted_calls()])
 
 
 def count_obj(phones: List[Phone]) -> int:
@@ -73,7 +73,7 @@ p3.accept_call()
 p3.accept_call()
 p3.accept_call()
 
-print(f'Общее количество принятых звонков: {count_obj([p1, p2, p3])}')
+print(f'Total number of call operations: {count_obj([p1, p2, p3])}')
 
 p1.save_numbers("phone1_number.csv")
 p2.save_numbers("phone2_number.csv")
@@ -111,10 +111,16 @@ from abc import abstractmethod
 
 
 class ChessFigures:
-    def __init__(self, color='') -> None:
+    def __init__(self, color) -> None:
         self.color = color
+        self.set_color(color)
         self.x_coord = 0
         self.y_coord = 0
+
+    def set_color(self, color: str) -> None:
+        if color not in ['white', 'black']:
+            raise ValueError('incorrect color selected')
+        self.color = color
 
     def change_color(self) -> str:
         if self.color == 'white':
@@ -124,29 +130,27 @@ class ChessFigures:
         return self.color
 
     def get_color(self) -> str:
-        if self.color not in ['white', 'black']:
-            raise ValueError('Цвет выбран неверно')
-        return f'Вы выбрали цвет: {self.change_color()}'
+        return f'you have chosen a color: {self.change_color()}'
 
     def _set_validator(self, val1, val2) -> None:
         if val1 in range(0, 8) and val2 in range(0, 8):
             self.x_coord = val1
             self.y_coord = val2
         else:
-            raise ValueError('Координаты фигур должны быть в диапазоне доски от 0 до 7')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 7')
 
     def get_step_validation(self) -> str:
-        return f'Мы находимся в диапазоне шахматной доски: {self.x_coord}, {self.y_coord}'
+        return f"We're in the checkerboard range: {self.x_coord}, {self.y_coord}"
 
     @abstractmethod
     def _change_place(self, val1, val2) -> None:
-        print('Реализация в подклассах')
+        print('Implementation in subclasses')
 
     def make_step(self, val1, val2) -> None:
         try:
             self._change_place(val1, val2)
         except ValueError as v_e:
-            print(f"Фигура {self.__class__.__name__} не дойдет до клетки за один шаг. Ошибка: {v_e}")
+            print(f"Figure {self.__class__.__name__} will not reach the cage in one step. Error: {v_e}")
 
 
 class Pawn(ChessFigures):
@@ -154,10 +158,10 @@ class Pawn(ChessFigures):
         if val1 in range(0, 3) and val2 in range(0, 3):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 2')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 2')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход пешкой с координатами: {self.x_coord}, {self.y_coord}'
+        return f'Made a move by the pawn with the coordinates: {self.x_coord}, {self.y_coord}'
 
 
 class Horse(ChessFigures):
@@ -165,10 +169,10 @@ class Horse(ChessFigures):
         if val1 in range(0, 6) and val2 in range(0, 6):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 5')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 5')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход конем с координатами: {self.x_coord}, {self.y_coord}'
+        return f'Made a move by the horse with the coordinates: {self.x_coord}, {self.y_coord}'
 
 
 class Officer(ChessFigures):
@@ -177,10 +181,10 @@ class Officer(ChessFigures):
         if val1 in range(0, 8) and val2 in range(0, 8):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 7')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 7')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход офицером с координатами: {self.x_coord}, {self.y_coord}'
+        return f'made a move by the officer with coordinates: {self.x_coord}, {self.y_coord}'
 
 
 class Tour(ChessFigures):
@@ -189,10 +193,10 @@ class Tour(ChessFigures):
         if val1 in range(0, 8) and val2 in range(0, 8):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 7')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 7')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход турой с координатами: {self.x_coord}, {self.y_coord}'
+        return f'made a move with coordinates: {self.x_coord}, {self.y_coord}'
 
 
 class Queen(ChessFigures):
@@ -201,10 +205,10 @@ class Queen(ChessFigures):
         if val1 in range(0, 8) and val2 in range(0, 8):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 7')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 7')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход королевой с координатами: {self.x_coord}, {self.y_coord}'
+        return f'Made a queen move with coordinates: {self.x_coord}, {self.y_coord}'
 
 
 class King(ChessFigures):
@@ -213,10 +217,10 @@ class King(ChessFigures):
         if val1 in range(0, 2) and val2 in range(0, 2):
             self._set_validator(val1, val2)
         else:
-            raise ValueError('Координаты должны быть в диапазоне от 0 до 1')
+            raise ValueError('The coordinates of the pieces must be in the board range from 0 to 1')
 
     def get_step_validation(self) -> str:
-        return f'Сделал ход королем с координатами: {self.x_coord}, {self.y_coord}'
+        return f'Made a king move with coordinates: {self.x_coord}, {self.y_coord}'
 
 
 def figures_list(figures: List[ChessFigures], x_value: int, y_value: int) -> List:
@@ -226,23 +230,23 @@ def figures_list(figures: List[ChessFigures], x_value: int, y_value: int) -> Lis
             figure.make_step(x_value, y_value)
             result.append(figure)
         except ValueError as v:
-            print(f"Фигура {figure.__class__.__name__} не дойдет до клетки за один шаг. Ошибка: {v}")
+            print(f"Figure {figure.__class__.__name__} will not reach the cage in one step. Error: {v}")
     return result
 
 
-p = Pawn()
-h = Horse()
-of = Officer()
-t = Tour()
-q = Queen()
-k = King()
+p = Pawn('white')
+h = Horse('black')
+of = Officer('black')
+t = Tour('black')
+q = Queen('black')
+k = King('white')
 
 x, y = 2, 4
 step_figures = figures_list([p, h, of, t, q, k], x, y)
 if not step_figures:
-    print(f"Ни одна из фигур не может дойти до клетки за один шаг")
+    print(f"None of the pieces can reach the square in one step")
 else:
-    print("Фигуры, которые могут дойти до клетки за один шаг:")
+    print("pieces that can reach a square in one step:")
     for f in step_figures:
         if f.x_coord == x and f.y_coord == y:
             print(f"{f.__class__.__name__} - {f.get_step_validation()}")
