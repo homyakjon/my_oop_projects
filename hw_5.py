@@ -3,18 +3,26 @@ import csv
 from email_exceptions import EmailAlreadyExistsException
 import requests
 from io import StringIO
+import logging
 
 
 class Employee:
-    def __init__(self, name: str, salary_for_day: float):
+    def __init__(self, name: str, salary_for_day: float, email: str = None):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = ''
+        self.email = email
+        self.validate()
         self.save_email()
 
     def save_email(self):
         with open('emails.csv', 'a') as file:
             file.write(f"{self.email}\n")
+
+    def log_error(self, error_message):
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open('error_logs.txt', 'a') as error_file:
+            error_file.write(f"{timestamp} | {error_message}\n")
+        logging.error(f"{timestamp} | {error_message}")
 
     def validate(self):
         with open('emails.csv', 'r', newline='') as file:
@@ -23,10 +31,8 @@ class Employee:
 
         if self.email in existing_emails:
             error_message = f"Email '{self.email}' already exists."
-            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            with open('error_logs.txt', 'a') as error_file:
-                error_file.write(f"{timestamp} | {error_message}\n")
-                raise EmailAlreadyExistsException(error_message)
+            self.log_error(error_message)
+            raise EmailAlreadyExistsException(error_message)
         else:
             self.save_email()
 
@@ -46,6 +52,14 @@ class Employee:
             current_day += timedelta(days=1)
 
         return working_days * self.salary_for_day
+
+    def add_email(self, email):
+        self.email = email
+        try:
+            self.validate()
+            print("Email successfully added.")
+        except EmailAlreadyExistsException as e:
+            print(f"Error: {e}")
 
     def __str__(self) -> str:
         return f"Position: {self.__class__.__name__}, name: {self.name}"
@@ -127,9 +141,7 @@ class Candidate:
         candidates_list = []
 
         if source.startswith('http'):
-            response = requests.get(source)
-            file_content = StringIO(response.text)
-
+            file_content = cls.read_candidates_from_url(source)
             reader = csv.DictReader(file_content)
 
             for row in reader:
@@ -144,6 +156,12 @@ class Candidate:
                 candidates_list.append(candidate)
 
         return candidates_list
+
+    @classmethod
+    def read_candidates_from_url(cls, url):
+        response = requests.get(url)
+        file_content = StringIO(response.text)
+        return file_content
 
 
 file_url = 'https://bitbucket.org/ivnukov/lesson2/raw/4f59074e6fbb552398f87636b5bf089a1618da0a/candidates.csv'
