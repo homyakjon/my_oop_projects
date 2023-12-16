@@ -1,31 +1,33 @@
 from datetime import datetime, timedelta
 import csv
-from exception import exception_email
+from email_exceptions import EmailAlreadyExistsException
 
 
 class Employee:
-    def __init__(self, name: str, salary_for_day: float):
+    def __init__(self, name: str, salary_for_day: float, email: str = ''):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = ''
-        # self.save_email()
+        self.email = email
+        self.save_email()
 
     def save_email(self):
         with open('emails.csv', 'a', newline='') as file:
             write_file = csv.writer(file)
-            write_file.writerow(self.email)
+            write_file.writerow([self.email])
 
     def work(self) -> str:
         return f"I come to the office."
 
     def check_salary(self, days):
         current_date = datetime.now()
-        beginning_of_month = current_date.replace(day=1)
+        current_day = current_date.replace(day=1)
+
+        total_days_in_month = (
+                    current_day.replace(month=current_date.month % 12 + 1, day=1) - timedelta(days=1)).day
 
         working_days = 0
-        current_day = beginning_of_month
 
-        while working_days < days:
+        while working_days < days and current_day.day <= total_days_in_month:
             if current_day.weekday() < 5:
                 working_days += 1
             current_day += timedelta(days=1)
@@ -33,8 +35,14 @@ class Employee:
         return working_days * self.salary_for_day
 
     def validate(self):
-        if self.email in 'emails.csv':
-            return exception_email()
+        try:
+            with open('emails.csv', 'r') as file:
+                existing_emails = set(row[0] for row in csv.reader(file))
+        except IndexError:
+            existing_emails = set()
+
+        if self.email in existing_emails:
+            raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
         return self.save_email()
 
     def __str__(self) -> str:
@@ -110,7 +118,7 @@ print(d2 <= d1)
 employee = Employee(name="Yurii", salary_for_day=200.0)
 days_to_check = 10
 salary_result = employee.check_salary(days=days_to_check)
-print(f"Зарплата за {days_to_check} робочих днів: {salary_result}")
+print(f"Salary for {days_to_check} working days: {salary_result}")
 employee.email = 'yurii@gmail.com'
 employee.validate()
 employee.save_email()
