@@ -1,16 +1,14 @@
 from datetime import datetime, timedelta
 import csv
-
-
-class EmailAlreadyExistsException(Exception):
-    pass
+from email_exceptions import EmailAlreadyExistsException
 
 
 class Employee:
-    def __init__(self, name: str, salary_for_day: float):
+    def __init__(self, name: str, salary_for_day: float, email: str = None):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = ''
+        self.email = email
+        self.validate()
         self.save_email()
 
     def save_email(self):
@@ -44,6 +42,14 @@ class Employee:
             current_day += timedelta(days=1)
 
         return working_days * self.salary_for_day
+
+    def add_email(self, email):
+        self.email = email
+        try:
+            self.validate()
+            print("Email successfully added.")
+        except EmailAlreadyExistsException as e:
+            print(f"Error: {e}")
 
     def __str__(self) -> str:
         return f"Position: {self.__class__.__name__}, name: {self.name}"
@@ -106,22 +112,3 @@ class Developer(Employee):
         return new_developer
 
 
-employee = Employee(name="Yurii", salary_for_day=200.0)
-a = Employee(name="Stan", salary_for_day=300.0)
-days_to_check = 10
-salary_result = employee.check_salary(days=days_to_check)
-print(f"Salary for {days_to_check} working days: {salary_result}")
-
-employee.email = 'yurii@gmail.com'
-try:
-    employee.validate()
-    print("Email successfully added.")
-except EmailAlreadyExistsException as e:
-    print(f"Error: {e}")
-
-a.email = 'hello@gmail.com'
-try:
-    a.validate()
-    print("Email successfully added.")
-except EmailAlreadyExistsException as e:
-    print(f"Error: {e}")
