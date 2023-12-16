@@ -29,8 +29,6 @@ class Employee:
 
 
 class Recruiter(Employee):
-    def __init__(self, name: str, salary_for_day: float):
-        super().__init__(name, salary_for_day)
 
     def work(self) -> str:
         return f"I come to the office and start to hiring."
@@ -65,6 +63,9 @@ d2 = Developer("Eric", 6000, ['Rust', 'Dart'])
 print(d2 > d1)
 print(d2 != d1)
 print(d2 <= d1)
+
+
+
 
 
 
