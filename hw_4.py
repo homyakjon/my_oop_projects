@@ -11,11 +11,6 @@ class Employee:
         self.validate()
         self.save_email()
 
-    def save_email(self):
-        with open('emails.csv', 'a', newline='') as file:
-            write_file = csv.writer(file)
-            write_file.writerow([self.email])
-
     def validate(self):
         with open('emails.csv', 'r') as file:
             reader = csv.reader(file)
@@ -23,8 +18,10 @@ class Employee:
 
         if self.email in existing_emails:
             raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
-        else:
-            self.save_email()
+
+    def save_email(self):
+        with open('emails.csv', 'a') as file:
+            file.write(f"{self.email}\n")
 
     def work(self) -> str:
         return f"I come to the office."
@@ -47,6 +44,7 @@ class Employee:
         self.email = email
         try:
             self.validate()
+            self.save_email()
             print("Email successfully added.")
         except EmailAlreadyExistsException as e:
             print(f"Error: {e}")
@@ -74,9 +72,6 @@ class Employee:
 
 
 class Recruiter(Employee):
-    def __init__(self, name: str, salary_for_day: float):
-        super().__init__(name, salary_for_day)
-
     def work(self) -> str:
         return f"I come to the office and start hiring."
 
