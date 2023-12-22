@@ -11,8 +11,20 @@ class Employee:
         self.name = name
         self.salary_for_day = salary_for_day
         self.email = email
-        self.validate()
-        self.save_email()
+        if email is not None:
+            self.validate()
+            self.save_email()
+
+    def validate(self):
+        try:
+            with open('emails.csv', 'r') as file:
+                reader = csv.reader(file)
+                existing_emails = set(row[0] for row in reader if row)
+        except FileNotFoundError:
+            existing_emails = set()
+
+        if self.email in existing_emails:
+            raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
 
     def save_email(self):
         with open('emails.csv', 'a') as file:
@@ -24,24 +36,13 @@ class Employee:
             error_file.write(f"{timestamp} | {error_message}\n")
         logging.error(f"{timestamp} | {error_message}")
 
-    def validate(self):
-        with open('emails.csv', 'r', newline='') as file:
-            reader = csv.reader(file)
-            existing_emails = set(row[0] for row in reader if row)
-
-        if self.email in existing_emails:
-            error_message = f"Email '{self.email}' already exists."
-            self.log_error(error_message)
-            raise EmailAlreadyExistsException(error_message)
-        else:
-            self.save_email()
-
     def work(self) -> str:
         return f"I come to the office."
 
-    def check_salary(self, days):
-        current_date = datetime.now()
-        beginning_of_month = current_date.replace(day=1)
+    def check_salary(self, days, start_date=None):
+        if start_date is None:
+            start_date = datetime.now()
+        beginning_of_month = start_date.replace(day=1)
 
         working_days = 0
         current_day = beginning_of_month
@@ -54,11 +55,14 @@ class Employee:
         return working_days * self.salary_for_day
 
     def add_email(self, email):
-        self.email = email
+        original_email = self.email
         try:
+            self.email = email
             self.validate()
+            self.save_email()
             print("Email successfully added.")
         except EmailAlreadyExistsException as e:
+            self.email = original_email
             print(f"Error: {e}")
 
     def __str__(self) -> str:
@@ -84,9 +88,6 @@ class Employee:
 
 
 class Recruiter(Employee):
-    def __init__(self, name: str, salary_for_day: float):
-        super().__init__(name, salary_for_day)
-
     def work(self) -> str:
         return f"I come to the office and start hiring."
 
@@ -100,19 +101,19 @@ class Developer(Employee):
         return f"I come to the office and start coding."
 
     def __gt__(self, other):
-        return self.tech_stack > other.tech_stack
+        return len(self.tech_stack) > len(other.tech_stack)
 
     def __lt__(self, other):
-        return self.tech_stack < other.tech_stack
+        return len(self.tech_stack) < len(other.tech_stack)
 
     def __eq__(self, other):
-        return self.tech_stack == other.tech_stack
+        return len(self.tech_stack) == len(other.tech_stack)
 
     def __ge__(self, other):
-        return self.tech_stack >= other.tech_stack
+        return len(self.tech_stack) >= len(other.tech_stack)
 
     def __le__(self, other):
-        return self.tech_stack <= other.tech_stack
+        return len(self.tech_stack) <= len(other.tech_stack)
 
     def __add__(self, other):
         new_name = f"{self.name} + {other.name}"
@@ -130,10 +131,9 @@ class Candidate:
         self.tech_stack = tech_stack
         self.main_skill = main_skill
         self.main_skill_grade = main_skill_grade
-        self.full_name_str = self.get_full_name
 
     @property
-    def get_full_name(self):
+    def full_name_str(self):
         return f'{self.first_name} {self.last_name}'
 
     @classmethod
@@ -142,20 +142,29 @@ class Candidate:
 
         if source.startswith('http'):
             file_content = cls.read_candidates_from_url(source)
-            reader = csv.DictReader(file_content)
+        else:
+            file_content = cls.read_candidates_from_file(source)
 
-            for row in reader:
-                candidate = cls(
-                    first_name=row['Full Name'].split(' ')[0],
-                    last_name=row['Full Name'].split(' ')[1],
-                    email=row['Email'],
-                    tech_stack=row['Technologies'].split('|'),
-                    main_skill=row['Main Skill'],
-                    main_skill_grade=row['Main Skill Grade']
-                )
-                candidates_list.append(candidate)
+        reader = csv.DictReader(file_content)
+
+        for row in reader:
+            candidate = cls(
+                first_name=row['Full Name'].split(' ')[0],
+                last_name=row['Full Name'].split(' ')[1],
+                email=row['Email'],
+                tech_stack=row['Technologies'].split('|'),
+                main_skill=row['Main Skill'],
+                main_skill_grade=row['Main Skill Grade']
+            )
+            candidates_list.append(candidate)
 
         return candidates_list
+
+    @classmethod
+    def read_candidates_from_file(cls, file_path):
+        with open(file_path, 'r', newline='') as file:
+            file_content = file.read()
+        return StringIO(file_content)
 
     @classmethod
     def read_candidates_from_url(cls, url):
@@ -164,9 +173,9 @@ class Candidate:
         return file_content
 
 
-file_url = 'https://bitbucket.org/ivnukov/lesson2/raw/4f59074e6fbb552398f87636b5bf089a1618da0a/candidates.csv'
-candidates_from_url = Candidate.generate_candidates(file_url)
+source_path_or_url = 'https://bitbucket.org/ivnukov/lesson2/raw/4f59074e6fbb552398f87636b5bf089a1618da0a/candidates.csv'
+candidates_list = Candidate.generate_candidates(source_path_or_url)
 
-for candidate in candidates_from_url:
+for candidate in candidates_list:
     print(f"{candidate.full_name_str}: {candidate.email}, {candidate.tech_stack},"
           f" {candidate.main_skill}, {candidate.main_skill_grade}")
