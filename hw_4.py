@@ -4,15 +4,23 @@ from email_exceptions import EmailAlreadyExistsException
 
 
 class Employee:
-    def __init__(self, name: str, salary_for_day: float, email: str = None):
+    def __init__(self, name: str, salary_for_day: float, email: str = ''):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = email
-        if email is not None:
-            self.validate()
-            self.save_email()
+        self.email = ''
 
-    def validate(self):
+        if email and email.strip():
+            try:
+                if self.validate_email(email):
+                    self.email = email
+                    self.save_email()
+            except EmailAlreadyExistsException as e:
+                print(f"Error: {e}")
+
+    def validate_email(self, email):
+        if not email.strip():
+            return False
+
         try:
             with open('emails.csv', 'r') as file:
                 reader = csv.reader(file)
@@ -20,8 +28,10 @@ class Employee:
         except FileNotFoundError:
             existing_emails = set()
 
-        if self.email in existing_emails:
-            raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
+        if email in existing_emails:
+            raise EmailAlreadyExistsException(f"Email '{email}' already exists.")
+
+        return True
 
     def save_email(self):
         with open('emails.csv', 'a') as file:
@@ -45,14 +55,12 @@ class Employee:
         return working_days * self.salary_for_day
 
     def add_email(self, email):
-        original_email = self.email
         try:
+            self.validate_email(email)
             self.email = email
-            self.validate()
             self.save_email()
             print("Email successfully added.")
         except EmailAlreadyExistsException as e:
-            self.email = original_email
             print(f"Error: {e}")
 
     def __str__(self) -> str:
