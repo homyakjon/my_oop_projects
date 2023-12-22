@@ -1,5 +1,5 @@
 import unittest
-from hw_5 import Recruiter
+from hw_6 import Recruiter
 
 
 class TestRecruiter(unittest.TestCase):

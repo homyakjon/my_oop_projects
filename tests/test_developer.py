@@ -1,5 +1,5 @@
 import unittest
-from hw_5 import Developer
+from hw_6 import Developer
 
 
 class TestDeveloper(unittest.TestCase):
@@ -18,6 +18,33 @@ class TestDeveloper(unittest.TestCase):
         self.assertEqual(new_dev.name, "Kenny + Kyle")
         self.assertEqual(new_dev.salary_for_day, 200.0)
         self.assertCountEqual(new_dev.tech_stack, ["Python", "JavaScript", "HTML"])
+
+    def setUp(self):
+        self.prog1 = Developer("Kenny", 200.0, ["Python", "JavaScript"])
+        self.prog2 = Developer("Bob", 150.0, ["Python", "Java", "C++"])
+        self.prog3 = Developer("Kyle", 140.0, ["Python", "Java"])
+
+    def test_greater_than(self):
+        self.assertTrue(self.prog2 > self.prog1)
+        self.assertFalse(self.prog1 > self.prog2)
+
+    def test_less_than(self):
+        self.assertTrue(self.prog1 < self.prog2)
+        self.assertFalse(self.prog2 < self.prog1)
+
+    def test_equal(self):
+        self.assertTrue(self.prog1 == self.prog3)
+        self.assertFalse(self.prog1 == self.prog2)
+
+    def test_greater_than_or_equal(self):
+        self.assertTrue(self.prog2 >= self.prog1)
+        self.assertTrue(self.prog1 >= self.prog3)
+        self.assertFalse(self.prog1 >= self.prog2)
+
+    def test_less_than_or_equal(self):
+        self.assertTrue(self.prog1 <= self.prog3)
+        self.assertTrue(self.prog1 <= self.prog2)
+        self.assertFalse(self.prog2 <= self.prog1)
 
 
 if __name__ == '__main__':
