@@ -22,7 +22,8 @@ candidate = Candidate(
     email="erik@gmail.com",
     tech_stack=["Scala", "Java"],
     main_skill="Scala",
-    main_skill_grade="Uppermediate"
+    main_skill_grade="Uppermediate",
+    salary=200.0
 )
 
 
