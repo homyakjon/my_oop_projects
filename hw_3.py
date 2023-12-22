@@ -7,43 +7,52 @@ class Employee:
     def __init__(self, name: str, salary_for_day: float, email: str = ''):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = email
-        self.save_email()
+        self.email = ''
+
+        if email and email.strip():
+            try:
+                if self.validate_email(email):
+                    self.email = email
+                    self.save_email()
+            except EmailAlreadyExistsException as e:
+                print(f"Error: {e}")
+
+    def validate_email(self, email):
+        if not email.strip():
+            return False
+
+        try:
+            with open('emails.csv', 'r') as file:
+                reader = csv.reader(file)
+                existing_emails = set(row[0] for row in reader if row)
+        except FileNotFoundError:
+            existing_emails = set()
+
+        if email in existing_emails:
+            raise EmailAlreadyExistsException(f"Email '{email}' already exists.")
+
+        return True
 
     def save_email(self):
-        with open('emails.csv', 'a', newline='') as file:
-            write_file = csv.writer(file)
-            write_file.writerow([self.email])
+        with open('emails.csv', 'a') as file:
+            file.write(f"{self.email}\n")
 
     def work(self) -> str:
         return f"I come to the office."
 
     def check_salary(self, days):
         current_date = datetime.now()
-        current_day = current_date.replace(day=1)
-
-        total_days_in_month = (
-                    current_day.replace(month=current_date.month % 12 + 1, day=1) - timedelta(days=1)).day
+        beginning_of_month = current_date.replace(day=1)
 
         working_days = 0
+        current_day = beginning_of_month
 
-        while working_days < days and current_day.day <= total_days_in_month:
+        while working_days < days:
             if current_day.weekday() < 5:
                 working_days += 1
             current_day += timedelta(days=1)
 
         return working_days * self.salary_for_day
-
-    def validate(self):
-        try:
-            with open('emails.csv', 'r') as file:
-                existing_emails = set(row[0] for row in csv.reader(file))
-        except IndexError:
-            existing_emails = set()
-
-        if self.email in existing_emails:
-            raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
-        return self.save_email()
 
     def __str__(self) -> str:
         return f"Position: {self.__class__.__name__}, name: {self.name}"
@@ -68,9 +77,6 @@ class Employee:
 
 
 class Recruiter(Employee):
-    def __init__(self, name: str, salary_for_day: float):
-        super().__init__(name, salary_for_day)
-
     def work(self) -> str:
         return f"I come to the office and start to hiring."
 
@@ -106,19 +112,4 @@ class Developer(Employee):
         return new_developer
 
 
-d1 = Developer("Stan", 5000, ['Python'])
-d2 = Developer("Eric", 6000, ['Rust', 'Dart'])
-res_developer = d1 + d2
-print(f'{res_developer.tech_stack}')
-print(res_developer)
-print(d2 > d1)
-print(d2 != d1)
-print(d2 <= d1)
 
-employee = Employee(name="Yurii", salary_for_day=200.0)
-days_to_check = 10
-salary_result = employee.check_salary(days=days_to_check)
-print(f"Salary for {days_to_check} working days: {salary_result}")
-employee.email = 'yurii@gmail.com'
-employee.validate()
-employee.save_email()
