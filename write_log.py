@@ -2,32 +2,34 @@ from datetime import datetime
 
 
 class Writer:
-    def __init__(self, file_path='add_string.csv') -> None:
-        self.file_path = file_path
+    FILE_PATH = 'add_string.csv'
 
-    def write(self, new_string):
-        with open(self.file_path, 'a') as file:
+    @classmethod
+    def write(cls, new_string, file_path=None):
+        if file_path is None:
+            file_path = cls.FILE_PATH
+        with open(file_path, 'a') as file:
             file.write(f"{new_string}\n")
 
 
 class Logger:
-    def __init__(self, writer: Writer = None) -> None:
-        self.writer = writer
-
-    def write(self, exception: Exception):
-        error_number = len(Logger.get_errors()) + 1
+    @classmethod
+    def write(cls, exception: Exception, file_path=None):
+        error_number = len(cls.get_errors(file_path)) + 1
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         error_class = exception.__class__.__name__
         error_message = str(exception)
-        log_entry = f"{error_number}\t{timestamp}\t{error_class}\t{error_message}"
+        log_entry = f"{error_number}, {timestamp}, {error_class}, {error_message}"
 
-        if self.writer:
-            self.writer.write(log_entry)
+        Writer.write(log_entry, file_path)
 
     @staticmethod
-    def get_errors():
+    def get_errors(file_path=None):
+        if file_path is None:
+            file_path = Writer.FILE_PATH
+
         try:
-            with open('add_string.csv', 'r') as file:
+            with open(file_path, 'r') as file:
                 return file.readlines()
         except FileNotFoundError:
             return []
@@ -39,9 +41,7 @@ def logger(func):
             result = func(*args, **kwargs)
             return result
         except Exception as e:
-            log_writer = Writer()
-            log = Logger(log_writer)
-            log.write(e)
+            Logger.write(e)
             raise e
 
     return wrapper

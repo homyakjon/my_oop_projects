@@ -1,23 +1,30 @@
-from datetime import datetime, timedelta
 import csv
-from email_exceptions import EmailAlreadyExistsException
-import requests
+from datetime import datetime, timedelta
 from io import StringIO
-import logging
+import requests
+from email_exceptions import EmailAlreadyExistsException
 from write_log import logger
 
 
 class Employee:
-    def __init__(self, name: str, salary_for_day: float, email: str = None):
+    def __init__(self, name: str, salary_for_day: float, email: str = ''):
         self.name = name
         self.salary_for_day = salary_for_day
-        self.email = email
-        if email is not None:
-            self.validate()
-            self.save_email()
+        self.email = ''
+
+        if email and email.strip():
+            try:
+                if self.validate_email(email):
+                    self.email = email
+                    self.save_email()
+            except EmailAlreadyExistsException as e:
+                print(f"Error: {e}")
 
     @logger
-    def validate(self):
+    def validate_email(self, email):
+        if not email.strip():
+            return False
+
         try:
             with open('emails.csv', 'r') as file:
                 reader = csv.reader(file)
@@ -25,18 +32,14 @@ class Employee:
         except FileNotFoundError:
             existing_emails = set()
 
-        if self.email in existing_emails:
-            raise EmailAlreadyExistsException(f"Email '{self.email}' already exists.")
+        if email in existing_emails:
+            raise EmailAlreadyExistsException(f"Email '{email}' already exists.")
+
+        return True
 
     def save_email(self):
         with open('emails.csv', 'a') as file:
             file.write(f"{self.email}\n")
-
-    def log_error(self, error_message):
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        with open('error_logs.txt', 'a') as error_file:
-            error_file.write(f"{timestamp} | {error_message}\n")
-        logging.error(f"{timestamp} | {error_message}")
 
     def work(self) -> str:
         return f"I come to the office."
@@ -56,14 +59,12 @@ class Employee:
         return working_days * self.salary_for_day
 
     def add_email(self, email):
-        original_email = self.email
         try:
+            self.validate_email(email)
             self.email = email
-            self.validate()
             self.save_email()
             print("Email successfully added.")
         except EmailAlreadyExistsException as e:
-            self.email = original_email
             print(f"Error: {e}")
 
     def __str__(self) -> str:
@@ -125,13 +126,14 @@ class Developer(Employee):
 
 
 class Candidate:
-    def __init__(self, first_name, last_name, email, tech_stack, main_skill, main_skill_grade):
+    def __init__(self, first_name, last_name, email, tech_stack, main_skill, main_skill_grade, salary):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.tech_stack = tech_stack
         self.main_skill = main_skill
         self.main_skill_grade = main_skill_grade
+        self.salary = float(salary)
 
     @property
     def full_name_str(self):
@@ -150,15 +152,21 @@ class Candidate:
         reader = csv.DictReader(file_content)
 
         for row in reader:
-            candidate = cls(
-                first_name=row['Full Name'].split(' ')[0],
-                last_name=row['Full Name'].split(' ')[1],
-                email=row['Email'],
-                tech_stack=row['Technologies'].split('|'),
-                main_skill=row['Main Skill'],
-                main_skill_grade=row['Main Skill Grade']
-            )
-            candidates_list.append(candidate)
+            salary = float(row['Salary'])
+
+            if salary > 0:
+                candidate = cls(
+                    first_name=row['Full Name'].split(' ')[0],
+                    last_name=row['Full Name'].split(' ')[1],
+                    email=row['Email'],
+                    tech_stack=row['Technologies'].split('|'),
+                    main_skill=row['Main Skill'],
+                    main_skill_grade=row['Main Skill Grade'],
+                    salary=salary
+                )
+                candidates_list.append(candidate)
+            else:
+                print(f"Warning: Candidate with salary {salary} is not valid and will be skipped.")
 
         return candidates_list
 
