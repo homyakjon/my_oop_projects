@@ -1,5 +1,4 @@
-from hw_7 import Employee, Recruiter, Developer, Candidate
-from write_log import Writer, Logger
+from hw_6 import Employee, Recruiter, Developer, Candidate
 
 employee1 = Employee(name="Yurii", salary_for_day=200.0)
 employee2 = Employee(name="Stan", salary_for_day=300.0)
@@ -21,19 +20,9 @@ candidate = Candidate(
     email="erik@gmail.com",
     tech_stack=["Scala", "Java"],
     main_skill="Scala",
-    main_skill_grade="Uppermediate"
+    main_skill_grade="Uppermediate",
+    salary=200.0
+
 )
 
 
-# writer_instance = Writer(file_path='add_string.csv')
-#
-# logger_instance = Logger(writer=writer_instance)
-#
-# try:
-#     raise ValueError("This is a sample error.")
-# except ValueError as e:
-#     logger_instance.write(e)
-#
-# log_contents = Logger.get_errors()
-# for line in log_contents:
-#     print(line.strip())

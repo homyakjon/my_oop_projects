@@ -12,7 +12,9 @@ class TestCandidate(unittest.TestCase):
             email="erik@gmail.com",
             tech_stack=["Scala", "Java"],
             main_skill="Scala",
-            main_skill_grade="Uppermediate"
+            main_skill_grade="Uppermediate",
+            salary=200.0
+
         )
 
         self.assertEqual(candidate.first_name, "Eric")
@@ -36,6 +38,8 @@ class TestCandidate(unittest.TestCase):
     def test_generate_candidates_from_url(self):
         candidates = Candidate.generate_candidates('test_candidates.csv')
         self.assertGreater(len(candidates), 0)
+        for candidate in candidates:
+            self.assertGreater(candidate.salary, 0, f"Candidate {candidate.full_name_str} has non-positive salary.")
 
 
 if __name__ == '__main__':
