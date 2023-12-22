@@ -13,7 +13,8 @@ employee2.add_email('hello@gmail.com')
 recruiter = Recruiter(name='Eric', salary_for_day=150.0)
 
 dev1 = Developer(name="Kenny", salary_for_day=200.0, tech_stack=["Python", "JavaScript"])
-dev2 = Developer(name="Kyle", salary_for_day=140.0, tech_stack=["JavaScript", "HTML"])
+dev2 = Developer(name="Bob", salary_for_day=150.0, tech_stack=["Python", "Java", "C++"])
+dev3 = Developer(name="Kyle", salary_for_day=140.0, tech_stack=["JavaScript", "HTML"])
 
 candidate = Candidate(
     first_name="Eric",
@@ -25,9 +26,9 @@ candidate = Candidate(
 )
 
 
-writer_instance = Writer(file_path='add_string.csv')
+writer_instance = Writer()
 
-logger_instance = Logger(writer=writer_instance)
+logger_instance = Logger()
 
 try:
     raise ValueError("This is a sample error.")
