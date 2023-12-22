@@ -14,11 +14,3 @@ recruiter = Recruiter(name='Eric', salary_for_day=150.0)
 dev1 = Developer(name="Kenny", salary_for_day=200.0, tech_stack=["Python", "JavaScript"])
 dev2 = Developer(name="Kyle", salary_for_day=140.0, tech_stack=["JavaScript", "HTML"])
 
-candidate = Candidate(
-    first_name="Eric",
-    last_name="Cartman",
-    email="erik@gmail.com",
-    tech_stack=["Scala", "Java"],
-    main_skill="Scala",
-    main_skill_grade="Uppermediate"
-)
